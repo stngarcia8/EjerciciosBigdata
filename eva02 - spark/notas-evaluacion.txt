@@ -1,0 +1,24 @@
+Descripción de archivos:
+lp.py: Corresponde a desarrollo de la pregunta01 "Titulo de la película con más caracteres"
+lp.txt: resultados obtenidos al ejecutar lp.py
+cp.py: Corresponde a la pregunta02 "Contar las 10 palabras repetidas" omitiendo 'the' y 'and'
+cp.txt: resultados al ejecutar cp.py
+peliculas.txt: Archivo de datos utilizados para realizar los ejercicios.
+
+Condiciones previas:
+El archivo "peliculas.txt", debe existir en hdfs en la raiz.
+
+Ejecución:
+Para la pregunta01
+spark-submit lp.py > lp.txt
+
+para ver el resultado:
+cat lp.txt
+
+
+Para la pregunta02:
+spark-submit cp.py > cp.txt
+
+para ver el resultado:
+cat cp.txt
+

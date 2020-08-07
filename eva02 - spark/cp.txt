@@ -1,0 +1,11 @@
+Las palabras mas frecuentes son:
+[of] ==> 137
+[in] ==> 63
+[a] ==> 40
+[to] ==> 32
+[&] ==> 21
+[on] ==> 17
+[with] ==> 15
+[de] ==> 15
+[for] ==> 14
+[love] ==> 10

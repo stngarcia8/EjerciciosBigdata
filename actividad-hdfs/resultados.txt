@@ -1,0 +1,168 @@
+0. copiar archivo al contenedor.
+host:
+H:\estudios\VII semestre\bigdata\actividades\1.1.8
+λ scp -P 2222 texto1.txt   maria_dev@localhost:texto1.txt
+maria_dev@localhost's password:
+texto1.txt                                                                         100% 2088    43.2KB/s   00:00
+
+contenedor:
+$ ls
+texto1.txt
+
+
+1. Crear un directorio en HDFS, dentro del home del usuario actual.
+- creando el directorio:
+$ hdfs dfs -mkdir actividad118
+
+- comprobando:
+$ hdfs dfs -ls 
+Found 3 items
+drwxr-xr-x   - maria_dev hdfs          0 2020-04-02 00:53 /user/maria_dev/actividad118
+drwxr-xr-x   - maria_dev hdfs          0 2020-03-31 15:56 /user/maria_dev/datos
+-rw-r--r--   1 maria_dev hdfs        765 2020-03-31 16:02 /user/maria_dev/xx.txt
+
+
+2. Listar el contenido de un directorio en HDFS que no se encuentre vacío.
+$ hdfs dfs -ls 
+Found 3 items
+drwxr-xr-x   - maria_dev hdfs          0 2020-04-02 00:53 /user/maria_dev/actividad118
+drwxr-xr-x   - maria_dev hdfs          0 2020-03-31 15:56 /user/maria_dev/datos
+-rw-r--r--   1 maria_dev hdfs        765 2020-03-31 16:02 /user/maria_dev/xx.txt
+
+
+3. Copiar un archivo, desde el sistema de archivos local, a HDFS.
+$ hdfs dfs -copyFromLocal texto1.txt actividad118/texto1.txt
+
+o tambien
+$ hdfs dfs -put texto1.txt actividad118/texto5
+
+- comprobando:
+$ hdfs dfs -ls actividad118
+Found 1 items
+-rw-r--r--   1 maria_dev hdfs       2088 2020-04-02 01:40 /user/maria_dev/actividad118/texto1.txt
+
+
+4. Mover y copiar archivos dentro de HDFS.
+- copiando:
+$ hdfs dfs -cp actividad118/texto1.txt actividad118/texto2.txt
+$ hdfs dfs -ls actividad118
+Found 2 items
+-rw-r--r--   1 maria_dev hdfs       2088 2020-04-02 01:40 /user/maria_dev/actividad118/texto1.txt
+-rw-r--r--   1 maria_dev hdfs       2088 2020-04-02 01:45 /user/maria_dev/actividad118/texto2.txt
+
+
+- Moviendo:
+$ hdfs dfs -mv actividad118/texto2.txt /user/maria_dev 
+
+$ hdfs dfs -ls /user/maria_dev
+Found 4 items
+drwxr-xr-x   - maria_dev hdfs          0 2020-04-02 01:48 /user/maria_dev/actividad118
+drwxr-xr-x   - maria_dev hdfs          0 2020-03-31 15:56 /user/maria_dev/datos
+-rw-r--r--   1 maria_dev hdfs       2088 2020-04-02 01:45 /user/maria_dev/texto2.txt
+-rw-r--r--   1 maria_dev hdfs        765 2020-03-31 16:02 /user/maria_dev/xx.txt
+
+$ hdfs dfs -ls actividad118
+Found 1 items
+-rw-r--r--   1 maria_dev hdfs       2088 2020-04-02 01:40 /user/maria_dev/actividad118/texto1.txt
+
+
+5. Verificar información sobre el uso del disco por parte de HDFS.
+$ hdfs dfs -du  
+2088  /user/maria_dev/actividad118
+0     /user/maria_dev/datos
+2088  /user/maria_dev/texto2.txt
+765   /user/maria_dev/xx.txt
+
+$ hdfs dfs -df -h
+Filesystem                                  Size   Used  Available  Use%
+hdfs://sandbox-hdp.hortonworks.com:8020  250.0 G  1.9 G    215.2 G    1%
+
+
+6. Borrar un archivo y un directorio en HDFS.
+- Estado actual del directorio /user/maria_dev
+$ hdfs dfs -ls  
+Found 4 items
+drwxr-xr-x   - maria_dev hdfs          0 2020-04-02 01:48 /user/maria_dev/actividad118
+drwxr-xr-x   - maria_dev hdfs          0 2020-03-31 15:56 /user/maria_dev/datos
+-rw-r--r--   1 maria_dev hdfs       2088 2020-04-02 01:45 /user/maria_dev/texto2.txt
+-rw-r--r--   1 maria_dev hdfs        765 2020-03-31 16:02 /user/maria_dev/xx.txt
+
+
+- Borrando archivo:
+$ hdfs dfs -rm texto2.txt
+20/04/02 02:03:28 INFO fs.TrashPolicyDefault: Moved: 'hdfs://sandbox-hdp.hortonworks.com:8020/user/maria_dev/texto2.txt' to trash at: hdfs://sandbox-hdp.hortonworks.com:8020/user/maria_dev/.Trash/Current/user/maria_dev/texto2.txt
+$ hdfs dfs -rm xx.txt
+20/04/02 02:04:55 INFO fs.TrashPolicyDefault: Moved: 'hdfs://sandbox-hdp.hortonworks.com:8020/user/maria_dev/xx.txt' to trash at: hdfs://sandbox-hdp.hortonworks.com:8020/user/maria_dev/.Trash/Current/user/maria_dev/xx.txt
+
+- comprobando:
+$ hdfs dfs -ls  
+Found 3 items
+drwx------   - maria_dev hdfs          0 2020-04-02 02:03 /user/maria_dev/.Trash
+drwxr-xr-x   - maria_dev hdfs          0 2020-04-02 01:48 /user/maria_dev/actividad118
+drwxr-xr-x   - maria_dev hdfs          0 2020-03-31 15:56 /user/maria_dev/datos
+
+
+- opcional, usando comodines:
+$ hdfs dfs -rm actividad118/*.txt
+20/04/02 02:16:50 INFO fs.TrashPolicyDefault: Moved: 'hdfs://sandbox-hdp.hortonworks.com:8020/user/maria_dev/texto1.txt' to trash at: hdfs://sandbox-hdp.hortonworks.com:8020/user/maria_dev/.Trash/Current/user/maria_dev/texto1.txt
+20/04/02 02:16:50 INFO fs.TrashPolicyDefault: Moved: 'hdfs://sandbox-hdp.hortonworks.com:8020/user/maria_dev/xx.txt' to trash at: hdfs://sandbox-hdp.hortonworks.com:8020/user/maria_dev/.Trash/Current/user/maria_dev/xx.txt1585793810641
+
+
+- Borrando directorio
+
+$ hdfs dfs -rmr actividad118
+rmr: DEPRECATED: Please use 'rm -r' instead.
+20/04/02 02:20:19 INFO fs.TrashPolicyDefault: Moved: 'hdfs://sandbox-hdp.hortonworks.com:8020/user/maria_dev/actividad118' to trash at: hdfs://sandbox-hdp.hortonworks.com:8020/user/maria_dev/.Trash/Current/user/maria_dev/actividad118
+
+$ hdfs dfs -rm -r datos
+20/04/02 02:21:40 INFO fs.TrashPolicyDefault: Moved: 'hdfs://sandbox-hdp.hortonworks.com:8020/user/maria_dev/datos' to trash at: hdfs://sandbox-hdp.hortonworks.com:8020/user/maria_dev/.Trash/Current/user/maria_dev/datos
+
+
+Limpiando la papelera:
+hdfs dfs -expunge
+
+
+
+
+Además, con el fin de verificar los efectos sobre el sistema de archivos, puede utilizar los comandos hdfs fsck filename y hdfs dfsadmin report, para revisar el estado de los archivos copiados y del sistema, respectivamente.
+- visualizando el comando fsck
+$ hdfs fsck /user/maria_dev
+Connecting to namenode via http://sandbox-hdp.hortonworks.com:50070/fsck?ugi=maria_dev&path=%2Fuser%2Fmaria_dev
+FSCK started by maria_dev (auth:SIMPLE) from /172.18.0.2 for path /user/maria_dev at Thu Apr 02 02:24:41 UTC 2020
+.....Status: HEALTHY
+ Total size:    9117 B
+ Total dirs:    7
+ Total files:   5
+ Total symlinks:                0
+ Total blocks (validated):      5 (avg. block size 1823 B)
+ Minimally replicated blocks:   5 (100.0 %)
+ Over-replicated blocks:        0 (0.0 %)
+ Under-replicated blocks:       0 (0.0 %)
+ Mis-replicated blocks:         0 (0.0 %)
+ Default replication factor:    1
+ Average block replication:     1.0
+ Corrupt blocks:                0
+ Missing replicas:              0 (0.0 %)
+ Number of data-nodes:          1
+ Number of racks:               1
+FSCK ended at Thu Apr 02 02:24:41 UTC 2020 in 2 milliseconds
+
+
+The filesystem under path '/user/maria_dev' is HEALTHY
+
+
+
+- visualizando el comando hdfs dfsadmin:
+$ sudo hdfs dfsadmin -report
+Configured Capacity: 268416651264 (249.98 GB)
+Present Capacity: 233073302528 (217.07 GB)
+DFS Remaining: 231055227904 (215.19 GB)
+DFS Used: 2018074624 (1.88 GB)
+DFS Used%: 0.87%
+Under replicated blocks: 0
+Blocks with corrupt replicas: 0
+Missing blocks: 0
+Missing blocks (with replication factor 1): 0
+
+-------------------------------------------------
+report: Access denied for user root. Superuser privilege is required

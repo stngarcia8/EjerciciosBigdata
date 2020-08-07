@@ -1,0 +1,363 @@
+1. copiar el archivo al contenedor.
+scp -P 2222 movies_asathor.sql maria_dev@localhost:movies_asathor.sql
+
+resultado:
+λ scp -P 2222 movies_asathor.sql  maria_dev@localhost:movies_asathor.sql
+maria_dev@localhost's password:
+movies_asathor.sql                                                                 100% 4011KB   6.9MB/s   00:00
+
+
+2. Conectarse al servidor:
+ssh -p 2222 maria_dev@localhost
+
+resultado:
+λ ssh -p 2222 maria_dev@localhost
+maria_dev@localhost's password:
+Last login: Tue Apr 14 15:48:45 2020 from 172.18.0.3
+
+
+3. verificar si esta el archivo
+[maria_dev@sandbox-hdp ~]$ ls
+manage.py  movies_asathor.sql  texto1.txt
+
+
+4. conectarse a mysql
+[maria_dev@sandbox-hdp ~]$ mysql -u root -p
+Enter password:
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 5
+Server version: 5.7.22 MySQL Community Server (GPL)
+
+
+5. crear la base de datos
+mysql> create database movielens_asathor;
+Query OK, 1 row affected (0.00 sec)
+
+mysql> use movielens_asathor;
+Database changed
+
+
+6. importar el script
+mysql> source movies_asathor.sql;
+Query OK, 0 rows affected (0.00 sec)
+Query OK, 0 rows affected, 1 warning (0.00 sec)
+Query OK, 0 rows affected (0.31 sec)
+Query OK, 21 rows affected (0.05 sec)
+Records: 21  Duplicates: 0  Warnings: 0
+Query OK, 0 rows affected, 1 warning (0.00 sec)
+Query OK, 0 rows affected (0.42 sec)
+Query OK, 943 rows affected (0.09 sec)
+Records: 943  Duplicates: 0  Warnings: 0
+Query OK, 0 rows affected, 1 warning (0.00 sec)
+Query OK, 0 rows affected (0.25 sec)
+Query OK, 100000 rows affected (2.35 sec)
+Records: 100000  Duplicates: 0  Warnings: 0
+Query OK, 0 rows affected, 1 warning (0.00 sec)
+Query OK, 0 rows affected (0.27 sec)
+
+ERROR 1366 (HY000): Incorrect string value: '\xD0\xB9rabl...' for column 'title' at row 543
+Query OK, 0 rows affected, 1 warning (0.00 sec)
+Query OK, 0 rows affected (0.37 sec)
+Query OK, 18 rows affected (0.03 sec)
+Records: 18  Duplicates: 0  Warnings: 0
+Query OK, 0 rows affected, 1 warning (0.00 sec)
+Query OK, 0 rows affected (0.34 sec)
+query OK, 2891 rows affected (0.30 sec)
+Records: 2891  Duplicates: 0  Warnings: 0
+Query OK, 0 rows affected (0.00 sec)
+mysql>
+
+
+
+7. consultar la tabla movies
+mysql> select * from movies;
+Empty set (0.01 sec)
+mysql>
+
+
+
+8. verificando version de sqoop
+[maria_dev@sandbox-hdp ~]$ sqoop version
+Warning: /usr/hdp/2.6.5.0-292/accumulo does not exist! Accumulo imports will fail.
+Please set $ACCUMULO_HOME to the root of your Accumulo installation.
+20/04/14 16:28:41 INFO sqoop.Sqoop: Running Sqoop version: 1.4.6.2.6.5.0-292
+Sqoop 1.4.6.2.6.5.0-292
+git commit id 0933a7c336da72cabb1ddfa5662416a374521b67
+Compiled by jenkins on Fri May 11 07:59:00 UTC 2018
+
+
+9.  importar datos a hdfs
+sqoop import --connect jdbc:mysql://localhost:3306/movielens_asathor?useSSL=false --username root -P --table movies --target-dir movies_asathor
+20/04/16 18:54:11 INFO sqoop.Sqoop: Running Sqoop version: 1.4.6.2.6.5.0-292
+Enter password:
+20/04/16 18:54:22 INFO manager.MySQLManager: Preparing to use a MySQL streaming resultset.
+20/04/16 18:54:22 INFO tool.CodeGenTool: Beginning code generation
+20/04/16 18:54:22 INFO manager.SqlManager: Executing SQL statement: SELECT t.* FROM `movies` AS t LIMIT 1
+20/04/16 18:54:22 INFO manager.SqlManager: Executing SQL statement: SELECT t.* FROM `movies` AS t LIMIT 1
+20/04/16 18:54:22 INFO orm.CompilationManager: HADOOP_MAPRED_HOME is /usr/hdp/2.6.5.0-292/hadoop-mapreduce
+Note: /tmp/sqoop-maria_dev/compile/840e8af2328b1345b8c1e48c7f805575/movies.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+20/04/16 18:54:23 INFO orm.CompilationManager: Writing jar file: /tmp/sqoop-maria_dev/compile/840e8af2328b1345b8c1e48c7f805575/movies.jar
+20/04/16 18:54:23 WARN manager.MySQLManager: It looks like you are importing from mysql.
+20/04/16 18:54:23 WARN manager.MySQLManager: This transfer can be faster! Use the --direct
+20/04/16 18:54:23 WARN manager.MySQLManager: option to exercise a MySQL-specific fast path.
+20/04/16 18:54:23 INFO manager.MySQLManager: Setting zero DATETIME behavior to convertToNull (mysql)
+20/04/16 18:54:23 INFO mapreduce.ImportJobBase: Beginning import of movies
+20/04/16 18:54:24 INFO client.RMProxy: Connecting to ResourceManager at sandbox-hdp.hortonworks.com/172.18.0.2:8032
+20/04/16 18:54:24 INFO client.AHSProxy: Connecting to Application History server at sandbox-hdp.hortonworks.com/172.18.0.2:10200
+20/04/16 18:54:28 INFO db.DBInputFormat: Using read commited transaction isolation
+20/04/16 18:54:28 INFO db.DataDrivenDBInputFormat: BoundingValsQuery: SELECT MIN(`id`), MAX(`id`) FROM `movies`
+20/04/16 18:54:28 INFO mapreduce.JobSubmitter: number of splits:1
+20/04/16 18:54:28 INFO mapreduce.JobSubmitter: Submitting tokens for job: job_1587056928323_0004
+20/04/16 18:54:28 INFO impl.YarnClientImpl: Submitted application application_1587056928323_0004
+20/04/16 18:54:28 INFO mapreduce.Job: The url to track the job: http://sandbox-hdp.hortonworks.com:8088/proxy/application_1587056928323_0004/
+20/04/16 18:54:28 INFO mapreduce.Job: Running job: job_1587056928323_0004
+20/04/16 18:54:38 INFO mapreduce.Job: Job job_1587056928323_0004 running in uber mode : false
+20/04/16 18:54:38 INFO mapreduce.Job:  map 0% reduce 0%
+20/04/16 18:54:42 INFO mapreduce.Job:  map 100% reduce 0%
+20/04/16 18:54:42 INFO mapreduce.Job: Job job_1587056928323_0004 completed successfully
+20/04/16 18:54:43 INFO mapreduce.Job: Counters: 30
+        File System Counters
+                FILE: Number of bytes read=0
+                FILE: Number of bytes written=171729
+                FILE: Number of read operations=0
+                FILE: Number of large read operations=0
+                FILE: Number of write operations=0
+                HDFS: Number of bytes read=105
+                HDFS: Number of bytes written=0
+                HDFS: Number of read operations=4
+                HDFS: Number of large read operations=0
+                HDFS: Number of write operations=2
+        Job Counters
+                Launched map tasks=1
+                Other local map tasks=1
+                Total time spent by all maps in occupied slots (ms)=1948
+                Total time spent by all reduces in occupied slots (ms)=0
+                Total time spent by all map tasks (ms)=1948
+                Total vcore-milliseconds taken by all map tasks=1948
+                Total megabyte-milliseconds taken by all map tasks=487000
+        Map-Reduce Framework
+                Map input records=0
+                Map output records=0
+                Input split bytes=105
+                Spilled Records=0
+                Failed Shuffles=0
+                Merged Map outputs=0
+                GC time elapsed (ms)=48
+                CPU time spent (ms)=800
+                Physical memory (bytes) snapshot=159002624
+                Virtual memory (bytes) snapshot=1974366208
+                Total committed heap usage (bytes)=50331648
+        File Input Format Counters
+                Bytes Read=0
+        File Output Format Counters
+                Bytes Written=0
+20/04/16 18:54:43 INFO mapreduce.ImportJobBase: Transferred 0 bytes in 18.6846 seconds (0 bytes/sec)
+20/04/16 18:54:43 INFO mapreduce.ImportJobBase: Retrieved 0 records.
+
+
+Visualizando el resultado:
+[maria_dev@sandbox-hdp ~]$ hdfs dfs -ls movies_asathor
+Found 2 items
+-rw-r--r--   1 maria_dev hdfs          0 2020-04-16 18:54 movies_asathor/_SUCCESS
+-rw-r--r--   1 maria_dev hdfs          0 2020-04-16 18:54 movies_asathor/part-m-00000
+
+
+copiando tabla ratings:
+sqoop import --connect jdbc:mysql://localhost:3306/movielens_asathor?useSSL=false --username root -P --table ratings --target-dir ratings_asathor
+20/04/16 18:49:01 INFO sqoop.Sqoop: Running Sqoop version: 1.4.6.2.6.5.0-292
+Enter password:
+20/04/16 18:49:14 INFO manager.MySQLManager: Preparing to use a MySQL streaming resultset.
+20/04/16 18:49:14 INFO tool.CodeGenTool: Beginning code generation
+20/04/16 18:49:14 INFO manager.SqlManager: Executing SQL statement: SELECT t.* FROM `ratings` AS t LIMIT 1
+20/04/16 18:49:14 INFO manager.SqlManager: Executing SQL statement: SELECT t.* FROM `ratings` AS t LIMIT 1
+20/04/16 18:49:14 INFO orm.CompilationManager: HADOOP_MAPRED_HOME is /usr/hdp/2.6.5.0-292/hadoop-mapreduce
+Note: /tmp/sqoop-maria_dev/compile/4c6acc981b3f47b7650ddd7bbb91f104/ratings.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+20/04/16 18:49:15 INFO orm.CompilationManager: Writing jar file: /tmp/sqoop-maria_dev/compile/4c6acc981b3f47b7650ddd7bbb91f104/ratings.jar
+20/04/16 18:49:15 WARN manager.MySQLManager: It looks like you are importing from mysql.
+20/04/16 18:49:15 WARN manager.MySQLManager: This transfer can be faster! Use the --direct
+20/04/16 18:49:15 WARN manager.MySQLManager: option to exercise a MySQL-specific fast path.
+20/04/16 18:49:15 INFO manager.MySQLManager: Setting zero DATETIME behavior to convertToNull (mysql)
+20/04/16 18:49:15 INFO mapreduce.ImportJobBase: Beginning import of ratings
+20/04/16 18:49:15 INFO client.RMProxy: Connecting to ResourceManager at sandbox-hdp.hortonworks.com/172.18.0.2:8032
+20/04/16 18:49:16 INFO client.AHSProxy: Connecting to Application History server at sandbox-hdp.hortonworks.com/172.18.0.2:10200
+20/04/16 18:49:19 INFO db.DBInputFormat: Using read commited transaction isolation
+20/04/16 18:49:19 INFO db.DataDrivenDBInputFormat: BoundingValsQuery: SELECT MIN(`id`), MAX(`id`) FROM `ratings`
+20/04/16 18:49:19 INFO db.IntegerSplitter: Split size: 24999; Num splits: 4 from: 1 to: 100000
+20/04/16 18:49:19 INFO mapreduce.JobSubmitter: number of splits:4
+20/04/16 18:49:19 INFO mapreduce.JobSubmitter: Submitting tokens for job: job_1587056928323_0003
+20/04/16 18:49:19 INFO impl.YarnClientImpl: Submitted application application_1587056928323_0003
+20/04/16 18:49:19 INFO mapreduce.Job: The url to track the job: http://sandbox-hdp.hortonworks.com:8088/proxy/application_1587056928323_0003/
+20/04/16 18:49:19 INFO mapreduce.Job: Running job: job_1587056928323_0003
+20/04/16 18:49:27 INFO mapreduce.Job: Job job_1587056928323_0003 running in uber mode : false
+20/04/16 18:49:27 INFO mapreduce.Job:  map 0% reduce 0%
+20/04/16 18:49:31 INFO mapreduce.Job:  map 25% reduce 0%
+20/04/16 18:49:32 INFO mapreduce.Job:  map 50% reduce 0%
+20/04/16 18:49:34 INFO mapreduce.Job:  map 100% reduce 0%
+20/04/16 18:49:35 INFO mapreduce.Job: Job job_1587056928323_0003 completed successfully
+20/04/16 18:49:36 INFO mapreduce.Job: Counters: 30
+        File System Counters
+                FILE: Number of bytes read=0
+                FILE: Number of bytes written=687004
+                FILE: Number of read operations=0
+                FILE: Number of large read operations=0
+                FILE: Number of write operations=0
+                HDFS: Number of bytes read=422
+                HDFS: Number of bytes written=3768068
+                HDFS: Number of read operations=16
+                HDFS: Number of large read operations=0
+                HDFS: Number of write operations=8
+        Job Counters
+                Launched map tasks=4
+                Other local map tasks=4
+                Total time spent by all maps in occupied slots (ms)=9985
+                Total time spent by all reduces in occupied slots (ms)=0
+                Total time spent by all map tasks (ms)=9985
+                Total vcore-milliseconds taken by all map tasks=9985
+                Total megabyte-milliseconds taken by all map tasks=2496250
+        Map-Reduce Framework
+                Map input records=100000
+                Map output records=100000
+                Input split bytes=422
+                Spilled Records=0
+                Failed Shuffles=0
+                Merged Map outputs=0
+                GC time elapsed (ms)=370
+                CPU time spent (ms)=8770
+                Physical memory (bytes) snapshot=745517056
+                Virtual memory (bytes) snapshot=7906058240
+                Total committed heap usage (bytes)=204996608
+        File Input Format Counters
+                Bytes Read=0
+        File Output Format Counters
+                Bytes Written=3768068
+20/04/16 18:49:36 INFO mapreduce.ImportJobBase: Transferred 3.5935 MB in 20.1784 seconds (182.3606 KB/sec)
+20/04/16 18:49:36 INFO mapreduce.ImportJobBase: Retrieved 100000 records.
+
+
+Verificando contenido ya que movies no tienen nada:
+[maria_dev@sandbox-hdp ~]$ hdfs dfs -tail ratings_asathor/part-m-00000
+24980,357,147,5,1997-11-07 22:10:57.0
+24981,476,765,4,1997-12-29 00:17:22.0
+24982,58,185,2,1998-01-08 21:14:56.0
+24983,233,192,5,1997-09-29 01:48:05.0
+24984,398,953,3,1997-09-30 19:36:08.0
+24985,424,289,5,1997-11-30 00:02:04.
+
+
+importando tabla users:
+[maria_dev@sandbox-hdp ~]$ sqoop import --connect jdbc:mysql://localhost:3306/movielens_asathor?useSSL=false --username root -P --table users --target-dir users_asathor
+20/04/16 19:09:15 INFO sqoop.Sqoop: Running Sqoop version: 1.4.6.2.6.5.0-292
+Enter password:
+20/04/16 19:09:28 INFO manager.MySQLManager: Preparing to use a MySQL streaming resultset.
+20/04/16 19:09:28 INFO tool.CodeGenTool: Beginning code generation
+20/04/16 19:09:29 INFO manager.SqlManager: Executing SQL statement: SELECT t.* FROM `users` AS t LIMIT 1
+20/04/16 19:09:29 INFO manager.SqlManager: Executing SQL statement: SELECT t.* FROM `users` AS t LIMIT 1
+20/04/16 19:09:29 INFO orm.CompilationManager: HADOOP_MAPRED_HOME is /usr/hdp/2.6.5.0-292/hadoop-mapreduce
+Note: /tmp/sqoop-maria_dev/compile/adb934cfd41724cc8da370ac24e337ea/users.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+20/04/16 19:09:29 INFO orm.CompilationManager: Writing jar file: /tmp/sqoop-maria_dev/compile/adb934cfd41724cc8da370ac24e337ea/users.jar
+20/04/16 19:09:29 WARN manager.MySQLManager: It looks like you are importing from mysql.
+20/04/16 19:09:29 WARN manager.MySQLManager: This transfer can be faster! Use the --direct
+20/04/16 19:09:29 WARN manager.MySQLManager: option to exercise a MySQL-specific fast path.
+20/04/16 19:09:29 INFO manager.MySQLManager: Setting zero DATETIME behavior to convertToNull (mysql)
+20/04/16 19:09:30 INFO mapreduce.ImportJobBase: Beginning import of users
+20/04/16 19:09:30 INFO client.RMProxy: Connecting to ResourceManager at sandbox-hdp.hortonworks.com/172.18.0.2:8032
+20/04/16 19:09:30 INFO client.AHSProxy: Connecting to Application History server at sandbox-hdp.hortonworks.com/172.18.0.2:10200
+20/04/16 19:09:34 INFO db.DBInputFormat: Using read commited transaction isolation
+20/04/16 19:09:34 INFO db.DataDrivenDBInputFormat: BoundingValsQuery: SELECT MIN(`id`), MAX(`id`) FROM `users`
+20/04/16 19:09:34 INFO db.IntegerSplitter: Split size: 235; Num splits: 4 from: 1 to: 943
+20/04/16 19:09:35 INFO mapreduce.JobSubmitter: number of splits:4
+20/04/16 19:09:35 INFO mapreduce.JobSubmitter: Submitting tokens for job: job_1587056928323_0005
+20/04/16 19:09:35 INFO impl.YarnClientImpl: Submitted application application_1587056928323_0005
+20/04/16 19:09:35 INFO mapreduce.Job: The url to track the job: http://sandbox-hdp.hortonworks.com:8088/proxy/application_1587056928323_0005/
+20/04/16 19:09:35 INFO mapreduce.Job: Running job: job_1587056928323_0005
+20/04/16 19:09:42 INFO mapreduce.Job: Job job_1587056928323_0005 running in uber mode : false
+20/04/16 19:09:42 INFO mapreduce.Job:  map 0% reduce 0%
+20/04/16 19:09:49 INFO mapreduce.Job:  map 25% reduce 0%
+20/04/16 19:09:50 INFO mapreduce.Job:  map 50% reduce 0%
+20/04/16 19:09:51 INFO mapreduce.Job:  map 100% reduce 0%
+20/04/16 19:09:51 INFO mapreduce.Job: Job job_1587056928323_0005 completed successfully
+20/04/16 19:09:52 INFO mapreduce.Job: Counters: 30
+        File System Counters
+                FILE: Number of bytes read=0
+                FILE: Number of bytes written=686976
+                FILE: Number of read operations=0
+                FILE: Number of large read operations=0
+                FILE: Number of write operations=0
+                HDFS: Number of bytes read=407
+                HDFS: Number of bytes written=16516
+                HDFS: Number of read operations=16
+                HDFS: Number of large read operations=0
+                HDFS: Number of write operations=8
+        Job Counters
+                Launched map tasks=4
+                Other local map tasks=4
+                Total time spent by all maps in occupied slots (ms)=20907
+                Total time spent by all reduces in occupied slots (ms)=0
+                Total time spent by all map tasks (ms)=20907
+                Total vcore-milliseconds taken by all map tasks=20907
+                Total megabyte-milliseconds taken by all map tasks=5226750
+        Map-Reduce Framework
+                Map input records=943
+                Map output records=943
+                Input split bytes=407
+                Spilled Records=0
+                Failed Shuffles=0
+                Merged Map outputs=0
+                GC time elapsed (ms)=1715
+                CPU time spent (ms)=7850
+                Physical memory (bytes) snapshot=666509312
+                Virtual memory (bytes) snapshot=7889235968
+                Total committed heap usage (bytes)=192413696
+        File Input Format Counters
+                Bytes Read=0
+        File Output Format Counters
+                Bytes Written=16516
+20/04/16 19:09:52 INFO mapreduce.ImportJobBase: Transferred 16.1289 KB in 21.3866 seconds (772.2604 bytes/sec)
+20/04/16 19:09:52 INFO mapreduce.ImportJobBase: Retrieved 943 records.
+
+
+verificando resultados de directorios creados:
+[maria_dev@sandbox-hdp ~]$ hdfs dfs -ls
+Found 8 items
+drwx------   - maria_dev hdfs          0 2020-04-16 18:42 .Trash
+drwx------   - maria_dev hdfs          0 2020-04-16 19:09 .staging
+drwxr-xr-x   - maria_dev hdfs          0 2020-04-03 03:53 actividad118
+-rw-r--r--   1 maria_dev hdfs        647 2020-04-03 15:32 manage.py
+drwxr-xr-x   - maria_dev hdfs          0 2020-04-16 18:54 movies_asathor
+drwxr-xr-x   - maria_dev hdfs          0 2020-04-16 18:49 ratings_asathor
+-rw-r--r--   1 maria_dev hdfs       2088 2020-04-03 03:44 texto6.txt
+drwxr-xr-x   - maria_dev hdfs          0 2020-04-16 19:09 users_asathor
+[maria_dev@sandbox-hdp ~]$
+
+
+verificando movies:
+[maria_dev@sandbox-hdp ~]$ hdfs dfs -ls movies_asathor
+Found 2 items
+-rw-r--r--   1 maria_dev hdfs          0 2020-04-16 18:54 movies_asathor/_SUCCESS
+-rw-r--r--   1 maria_dev hdfs          0 2020-04-16 18:54 movies_asathor/part-m-00000
+
+
+Verificando ratings:
+[maria_dev@sandbox-hdp ~]$ hdfs dfs -ls ratings_asathor
+Found 5 items
+-rw-r--r--   1 maria_dev hdfs          0 2020-04-16 18:49 ratings_asathor/_SUCCESS
+-rw-r--r--   1 maria_dev hdfs     930066 2020-04-16 18:49 ratings_asathor/part-m-00000
+-rw-r--r--   1 maria_dev hdfs     944902 2020-04-16 18:49 ratings_asathor/part-m-00001
+-rw-r--r--   1 maria_dev hdfs     946357 2020-04-16 18:49 ratings_asathor/part-m-00002
+-rw-r--r--   1 maria_dev hdfs     946743 2020-04-16 18:49 ratings_asathor/part-m-00003
+
+
+verificando users:
+[maria_dev@sandbox-hdp ~]$ hdfs dfs -ls users_asathor
+Found 5 items
+-rw-r--r--   1 maria_dev hdfs          0 2020-04-16 19:09 users_asathor/_SUCCESS
+-rw-r--r--   1 maria_dev hdfs       4042 2020-04-16 19:09 users_asathor/part-m-00000
+-rw-r--r--   1 maria_dev hdfs       4158 2020-04-16 19:09 users_asathor/part-m-00001
+-rw-r--r--   1 maria_dev hdfs       4149 2020-04-16 19:09 users_asathor/part-m-00002
+-rw-r--r--   1 maria_dev hdfs       4167 2020-04-16 19:09 users_asathor/part-m-00003
+
+
+

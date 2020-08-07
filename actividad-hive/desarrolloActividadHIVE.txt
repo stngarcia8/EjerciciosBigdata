@@ -1,0 +1,33 @@
+otra forma:
+sqoop import-all-tables --connect jdbc:mysql://localhost/movielens --username root -password cloudera --exclude-tables genres,genres_movies,occupations --warehouse-dir /pruebaImpData
+
+
+
+
+1. creando base de datos en hive:
+hive> create database movielens_asathor;
+OK
+Time taken: 1.88 seconds
+
+
+2. usando la base de datos:
+hive> use movielens_asathor;
+OK
+Time taken: 0.22 seconds
+
+
+3. Creando tabla movies:
+hive> create external table movies(id int, title varchar(255), rlease_date date) row format delimited fields terminated by '\t' location '/users/maria_dev/movies_asathor';
+OK
+Time taken: 1.697 seconds
+
+
+4. Creando tabla ratings:
+hive> create external table ratings(id int, user_id int, movie_id int, rating int, released_at timestamp) row format delimited fields terminated by '\t' location '/users/maria_dev/ratings_asathor';
+OK
+Time taken: 0.989 seconds
+
+5. Verificando resultados:
+movies:
+
+

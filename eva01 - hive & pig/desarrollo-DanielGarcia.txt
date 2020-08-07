@@ -1,0 +1,122 @@
+Traspaso de archivos
+-------- -- --------
+
+1.copiar el archivo al servidor
+scp -P 2222 airline-safety.csv  maria_dev@localhost:asathor/airline-safety.csv
+
+2. copiar los script de pig al servidor
+scp -P 2222 *.pig  maria_dev@localhost:asathor
+
+
+
+Conectando al servidor
+---------- -- -------
+
+3. ingresar al servidor
+ssh -p 2222 maria_dev@localhost
+
+4.cambiarse al directorio de usuario en sistema local
+cd asathor
+
+listar el contenido del directorio local
+ls
+
+
+Trabajando en HDFS
+---------- -- ----
+
+5. crear directorio de usuario en hdfs
+hdfs dfs -mkdir asathor
+
+6. copiar el archivo a hdfs
+hdfs dfs -put airline-safety.csv asathor/airline-safety.csv
+
+7. visualizar el archivo en hdfs
+hdfs dfs -ls asathor
+
+
+Trabajando con hive
+---------- --- ----
+
+8. iniciar hive
+hive
+
+-- crear base de datos en hive
+create database eva_asathor;
+
+-- cambiar a la base de datos
+use eva_asathor;
+
+-- Indicar que muestre las cabeceras
+set hive.cli.print.header=true;
+
+-- importar los datos a hive
+CREATE EXTERNAL TABLE airlines_asathor(
+aerolinea string,
+km_semanal bigint,
+incidentes_85_99 int,
+fatales_85_99 int,
+muertes_85_99 int,
+incidentes_00_14 int,
+fatales_00_14 int,
+muertes_00_14 int)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+LOCATION '/user/maria_dev/asathor';
+
+-- Verificar si cargo los datos correctamente
+select * from airlines_asathor;
+
+-- Pregunta 1: Calcular la media de incidentes
+select 
+round(avg(incidentes_85_99),0) as in_85_89,
+round(avg(fatales_85_99),0) as acc_85_99,    
+round(avg(incidentes_00_14),0) as inc_00_14,
+round(avg(fatales_00_14),0) as acc_fatales_00_14    
+from airlines_asathor;
+
+-- analisis de los periodos
+-- Analisis de incidentes por periodo
+select 
+sum(airlines_asathor.incidentes_85_99) as p00_99,
+round((sum(airlines_asathor.incidentes_85_99)/(sum(airlines_asathor.incidentes_85_99)+sum(airlines_asathor.incidentes_00_14))*100),2) as porc85_99,
+sum(airlines_asathor.incidentes_00_14) as p00_14,  
+round((sum(airlines_asathor.incidentes_00_14)/(sum(airlines_asathor.incidentes_85_99)+sum(airlines_asathor.incidentes_00_14))*100),2) as porc00_14,
+(sum(airlines_asathor.incidentes_85_99)+sum(airlines_asathor.incidentes_00_14)) as incidentes 
+from airlines_asathor;
+
+-- Analisis de accidentes por periodo
+select 
+sum(airlines_asathor.fatales_85_99) as p00_99,
+round((sum(airlines_asathor.fatales_85_99)/(sum(airlines_asathor.fatales_85_99)+sum(airlines_asathor.fatales_00_14))*100),2) as porc85_99,
+sum(airlines_asathor.fatales_00_14) as p00_14,  
+round((sum(airlines_asathor.fatales_00_14)/(sum(airlines_asathor.fatales_85_99)+sum(airlines_asathor.fatales_00_14))*100),2) as porc00_14,
+(sum(airlines_asathor.fatales_85_99)+sum(airlines_asathor.fatales_00_14)) as accidentes 
+from airlines_asathor;
+
+-- Analisis de muertes por periodo
+select 
+sum(airlines_asathor.muertes_85_99) as p00_99,
+round((sum(airlines_asathor.muertes_85_99)/(sum(airlines_asathor.muertes_85_99)+sum(airlines_asathor.muertes_00_14))*100),2) as porc85_99,
+sum(airlines_asathor.muertes_00_14) as p00_14,  
+round((sum(airlines_asathor.muertes_00_14)/(sum(airlines_asathor.muertes_85_99)+sum(airlines_asathor.muertes_00_14))*100),2) as porc00_14,
+(sum(airlines_asathor.muertes_85_99)+sum(airlines_asathor.muertes_00_14)) as muertos 
+from airlines_asathor;
+
+-- Aerolineas con mayor cantidad de fallecidos 2000-2014
+select 
+airlines_asathor.aerolinea,  
+airlines_asathor.muertes_00_14 
+from airlines_asathor  
+order by airlines_asathor.muertes_00_14 desc 
+limit 3;
+
+-- Aerolineas con mayor cantidad de kilometros recorridos y fallecidos 2000-2014
+select 
+airlines_asathor.aerolinea,  
+airlines_asathor.km_semanal,  
+airlines_asathor.muertes_00_14 
+from airlines_asathor  
+order by airlines_asathor.km_semanal desc, airlines_asathor.muertes_00_14 desc 
+limit 3;
+
